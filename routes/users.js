@@ -5,18 +5,11 @@ const User = require("../models/user");
 const Router = require("express").Router;
 const router = new Router();
 
-
-
 // import middleware
-const {
-    authenticateJWT,
-    ensureCorrectUser,
-} = require("../middleware/auth");
+const { ensureCorrectUser } = require("../middleware/auth");
 
 const app = require("../app");
 
-//authenticate user before every route
-// app.use(authenticateJWT)
 
 /** GET / - get list of users.
  *

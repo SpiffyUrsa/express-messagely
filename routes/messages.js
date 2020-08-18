@@ -9,12 +9,8 @@ const router = new Router();
 
 // import middleware
 const {
-    authenticateJWT,
-    ensureLoggedIn,
-    ensureCorrectUser } = require("../middleware/auth")
+    ensureLoggedIn} = require("../middleware/auth")
 
-//authenticate user before every route
-// app.use(authenticateJWT)
 
 /** GET /:id - get detail of message.
  *
