@@ -25,18 +25,15 @@ router.post("/login", async function (req, res, next) {
 	try {
 		const { username, password } = req.body;
 
-		const user = await User.authenticate(username, password)
-		console.log('this is user', user, "username", username)
+		const user = await User.authenticate(username, password);
+		console.log('this user is authenticated', user, "username", username)
 
-		if (user) {
-			User.updateLoginTimestamp(username)
+		if (user === true) {
+			User.updateLoginTimestamp(username);
 			let token = jwt.sign({ username }, SECRET_KEY);
 			return res.json({ token });
-
-		} else {
-			throw new UnauthorizedError("Invalid user/password");
-		}
-
+		} 
+		throw new UnauthorizedError("Invalid user/password");
 
 	} catch (err) {
 		return next(err);

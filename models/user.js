@@ -1,6 +1,6 @@
 "use strict";
 const { BCRYPT_WORK_FACTOR } = require("../config");
-const { NotFoundError } = require("../expressError");
+const { NotFoundError, UnauthorizedError } = require("../expressError");
 const db = require("../db");
 const bcrypt = require("bcrypt");
 /** User of the site. */
@@ -41,6 +41,10 @@ class User {
     `, [username]);
 
     const userData = result.rows[0];
+
+    if (userData === undefined) {
+      throw new UnauthorizedError("Invalid user/password");
+    }
     
     return await bcrypt.compare(password, userData.password) === true;
   }
@@ -111,7 +115,7 @@ class User {
    */
 
   static async messagesFrom(username) {
-    
+
     const results = await db.query(`
         SELECT m.id, 
               m.body, 
