@@ -16,39 +16,31 @@ const jwt = require("jsonwebtoken")
 const { UnauthorizedError } = require("../expressError")
 
 //import secret_key
-const { SECRET_KEY} = require("../config");
+const { SECRET_KEY } = require("../config");
 const User = require("../models/user");
 
 
 /** POST /login: {username, password} => {token} */
 router.post("/login", async function (req, res, next) {
-    try {
-        const { username, password } = req.body;
-        const result = await db.query(
-            `SELECT password
-            FROM users
-            WHERE username = $1
-            `, [username]
-        )
+	try {
+		const { username, password } = req.body;
 
-        let user = result.rows[0];
-        //console.log('this is user', user)
-        //console.log("username", username)
+		const user = await User.authenticate(username, password)
+		console.log('this is user', user, "username", username)
 
-        if (user) {
-            if (await bcrypt.compare(password, user.password) === true) {
-                let token = jwt.sign({ username }, SECRET_KEY);
-                return res.json({ token });
-            }
-            //Need to handle it doesn't call res.json, or go to next(err)
-            throw new UnauthorizedError("Invalid user/password");
-        } else {
-            throw new UnauthorizedError("Invalid user/password");
-        }
+		if (user) {
+			User.updateLoginTimestamp(username)
+			let token = jwt.sign({ username }, SECRET_KEY);
+			return res.json({ token });
 
-    } catch (err) {
-        return next(err);
-    }
+		} else {
+			throw new UnauthorizedError("Invalid user/password");
+		}
+
+
+	} catch (err) {
+		return next(err);
+	}
 });
 
 
@@ -56,18 +48,21 @@ router.post("/login", async function (req, res, next) {
  *
  * {username, password, first_name, last_name, phone} => {token}.
  */
-router.post("/register", async function(req, res, next){
+router.post("/register", async function (req, res, next) {
 
-    try {
-    const { username } = await User.register(req.body)
+	try {
+		const { username } = await User.register(req.body)
 
-    let token = jwt.sign({username}, SECRET_KEY)
+		//don't need to await bc below lines don't depend on this finishing
+		User.updateLoginTimestamp(username)
 
-    return res.json({token})
+		let token = jwt.sign({ username }, SECRET_KEY)
 
-    } catch(err){
-        return next(err)
-    }
+		return res.json({ token })
+
+	} catch (err) {
+		return next(err)
+	}
 
 })
 
